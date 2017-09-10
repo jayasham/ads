@@ -1,0 +1,82 @@
+https://github.com/jayasham/ads.git
+2. Installation of Gerrit
+The installation of Gerrit requires the JDK to be installed on the machine. Also the Git command line tooling must be installed.
+
+2.1. Download Gerrit
+Download the latest Gerrit release from Gerrit download page.
+
+The download is a .war file. This war file can run in a servlet container, for example, a Jetty or Tomcat installation. The .war file contains a Jetty web server and can be started directly for testing or rapid deployment.
+
+The following description starts the Gerrit server directly.
+
+2.2. Setup of Gerrit
+Copy the .war file into an empty directory.
+
+Switch on the command line to the location of the directory to which you extracted the .war file. Install Gerrit with the following command.
+
+# create Gerrit review site with questionaire
+java -jar gerrit*.war init -d review_site
+
+# alternatively use the --batch command
+java -jar gerrit*.war init --batch -d review_site
+The Gerrit instance is installed into the folder specified with the -d parameter, in this example review_site.
+
+If you do not use --batch flag, you can interactively configure the Gerrit instance via a set of questions. A few of these options are discussed in the following table.
+
+Table 1. Gerrit setup options
+Option	Description
+Location of Git repositories
+Location of Git repositories, default is the git directory in the installation folder of your Gerrit installation.
+Database server type
+Gerrit supports several databases, by default it uses a preconfigured H2 database.
+Run as user
+Select that Gerrits runs as "root" user.
+Listen on port
+Allows you to configure the port Gerrit is listening to, Gerrit by default listens on port 29418 for SSH access and on port 8080 for web access. This can be changed if the ports are already used.
+Authentication method
+Typical configuring to access the Gerrit server uses LDAP or OpenID Single Sign-on which is the default setting. Use ? to see all available settings for this option. For testing use "development_become_any_account".
+Use development_become_any_account to enable general access to Gerrit. If started with this setting, you have a Become link in the web interface which allows you to login and to create a new account. To enable that authentication method, you can use the following command: git config --file ~/etc/gerrit.config auth.type DEVELOPMENT_BECOME_ANY_ACCOUNT
+After a successful installation Gerrit starts automatically on Unix-like systems. You can start and stop it again with the following commands on Linux based systems.
+
+# assumes you installed Gerrit in
+# the home directory under gerrit
+
+# start if not running
+~/gerrit/review_site/bin/gerrit.sh start
+
+# stop it again
+~/gerrit/review_site/bin/gerrit.sh stop
+On Microsoft Windows based systems you need to invoke the daemon directly. From a command shell switch to the folder gerrit_site and run the following command to start the server.
+
+cd gerrit_site
+java -jar bin/gerrit.war daemon -d
+This starts Gerrit. To stop it again, kill the running process using Ctrl+C.
+
+If something goes wrong, look into the logs folder.
+The local Gerrit configuration is stored in the ./review_site/etc/ folder.
+3. Gerrit workflow
+3.1. A typical Gerrit workflow
+The following describes a typical Gerrit workflow of you as a developer using Gerrit.
+
+You fetch or pull in the latest changes from the Git repository
+
+Optionally, you create a new local branch based on the origin/master branch.
+
+This step is optional but it is considered a good practice to create an independent branch per change to avoid unnecessary dependencies between commits (Gerrit reviews).
+You implement a change (new feature, bug fix, documentation change) and create a commit in his local repository with these modifications.
+
+implements (if necessary) more changes and amends the existing commit, until he is satisfied with the change.
+
+Afterwards you perform the following steps.
+
+Push the change to the Gerrit review system to the refs/for/master refspec to create a change for the master branch.
+
+If you receive improvement suggestions, fetch the latest changes and rebase your patch onto origin/master
+
+Repeat the last three steps until the patch is finally accepted and merged into the codebase (or until the change is completely rejected). Finally you can delete your local branch.
+
+3.2. Gerrit vs. Git workflow
+In the Gerrit scenario amending a commit is used to update the Gerrit change request. Using the amend operation on a published commit is usually discouraged in Git, in Gerrit it is the normal process.
+
+3.3. Gerrit vs. GitHub workflow
+The Gerrit review system is based on the assumption that each commit is reviewed separately. At GitHub, a complete branch is reviewed and merging with the pull request.
